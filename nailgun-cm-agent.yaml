@@ -1,0 +1,10 @@
+
+env-id: 9
+puppet-modules: "/etc/puppet/modules"
+
+default_start_task: post_deployment_start
+default_end_task: post_deployment_end
+
+skip-tasks: 
+  - ceph_create_pools
+  - ceilometer-radosgw-user 
