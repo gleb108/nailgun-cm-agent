@@ -24,13 +24,23 @@ with open(args.config, 'r') as settings:
 
 env_id = cfg['env-id']
 path = cfg['puppet-modules']
+
+roles = cfg['roles']
+if args.verbose:
+   print "\nRoles:"
+   for r in roles:
+       print r
+
 start_task = cfg['default_start_task']
+if args.verbose:
+   print "\nstart_task: {0}".format(start_task)
 end_task = cfg['default_end_task']
+if args.verbose:
+   print "\nend_task: {0}".format(end_task)
 
 skip_tasks = cfg['skip-tasks']
 if args.verbose:
-   print
-   print "Tasks to skip:"
+   print "\nTasks to skip:"
    for t in skip_tasks:
        print t
 
@@ -45,12 +55,24 @@ def ok_to_run ():
 
 def get_nodes ():
     nodes = Node.get_all_data()
-    res = []
+    res = {}
     for node in nodes:
-        res.append(node['id'])
+        res[node['id']] = node['roles']
     return res
 
-   
+def run (nodes, tasks):
+    node_collection = NodeCollection.init_with_ids(nodes)
+    run = env.execute_tasks(node_collection,tasks)
+    if not ok_to_run():
+       sys.exit(1)
+    while True:
+       if args.verbose:
+          print "Progress: {0} Status: {1}".format(run.progress, run.status)
+       if run.progress == 100:
+          break
+       time.sleep(1)
+
+
 
 env = Environment(env_id)
 
@@ -63,27 +85,30 @@ env = Environment(env_id)
 #     :param include: list or None
 tasks = env.get_tasks(skip_tasks,end_task, start_task, None)
 if args.verbose:
-   print
-   print "Tasks to execute:" 
+   print "\nTasks to execute:" 
    for t in tasks:
        print t
+
 nodes = get_nodes()
+controllers = []
+other_nodes =  []
+for node_id in nodes.keys():
+    roles= nodes[node_id]
+    if roles.count('controller'):
+       controllers.append(node_id)
+    else:
+       other_nodes.append(node_id)
+
 if args.verbose:
-   print 
-   print "Nodes to apply:" 
-   for n in nodes:
-       print n
+   print "\nController nodes: {0}".format(controllers)
+run(controllers, tasks)
 
-node_collection = NodeCollection.init_with_ids(nodes)
 
-if not ok_to_run():
-   sys.exit(1)
+if args.verbose:
+   print "\nOther nodes: {0}".format(other_nodes) 
+run(other_nodes, tasks)
 
-run = env.execute_tasks(node_collection,tasks)
 
-while True:
-   if run.progress == 100:
-       break
-   print "Progress: {0} Status: {1}".format(run.progress, run.status)
-   time.sleep(1)
+
+
 

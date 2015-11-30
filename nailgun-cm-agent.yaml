@@ -2,6 +2,24 @@
 env-id: 9
 puppet-modules: "/etc/puppet/modules"
 
+
+#Use task_graph.py to get list of roles 
+#/root/fuel-library/utils/task_graph/task_graph.py -t /etc/puppet/modules/
+
+roles:
+  - base-os            
+  - zabbix-server      
+  - virt               
+  - primary-mongo      
+  - mongo              
+  - primary-controller 
+  - controller         
+  - cinder             
+  - compute            
+  - cinder-vmware      
+  - ceph-osd           
+  - compute-vmware     
+
 default_start_task: post_deployment_start
 default_end_task: post_deployment_end
 
