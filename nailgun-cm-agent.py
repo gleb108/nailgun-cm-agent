@@ -57,7 +57,8 @@ def get_nodes ():
     nodes = Node.get_all_data()
     res = {}
     for node in nodes:
-        res[node['id']] = node['roles']
+        if node['cluster'] == env_id and node['online']:
+           res[node['id']] = node['roles']
     return res
 
 def run (nodes, tasks):
