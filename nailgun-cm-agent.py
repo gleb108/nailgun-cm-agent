@@ -68,7 +68,7 @@ def run (nodes, tasks):
     while True:
        if args.verbose:
           print "Progress: {0} Status: {1}".format(run.progress, run.status)
-       if run.progress == 100:
+       if run.progress == 100 or run.status == 'error':
           break
        time.sleep(1)
 
